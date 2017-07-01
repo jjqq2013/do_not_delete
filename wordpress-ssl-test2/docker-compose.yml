@@ -1,0 +1,32 @@
+version: '2'
+
+services:
+  wordpress:
+    depends_on:
+      - db
+    image: wordpress
+    volumes:
+      - ./sites-enabled/default-ssl.conf:/etc/apache2/sites-enabled/default-ssl.conf
+      - ./mods-enabled/ssl.conf:/etc/apache2/mods-enabled/ssl.conf
+      - ./mods-enabled/ssl.load:/etc/apache2/mods-enabled/ssl.load
+      - ./mods-enabled/socache_shmcb.load:/etc/apache2/mods-enabled/socache_shmcb.load
+      - ./ssl/crt:/etc/ssl/certs/ssl-cert-snakeoil.pem
+      - ./ssl/key:/etc/ssl/private/ssl-cert-snakeoil.key
+    ports:
+      - "8000:443"
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wordpress
+      WORDPRESS_DB_PASSWORD: wordpress
+
+  db:
+    image: mysql
+    volumes:
+      - ./db_data:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: somewordpress
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress
+      MYSQL_PASSWORD: wordpress
