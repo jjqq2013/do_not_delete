@@ -5,8 +5,6 @@ services:
     depends_on:
       - rethinkdb
     image: openstf/stf
-    networks:
-      - stf
     command: stf local --adb-host=docker.for.mac.localhost --adb-port=15037
     ports:
       - 7100:7100
@@ -17,11 +15,6 @@ services:
 
   rethinkdb:
     image: rethinkdb
-    networks:
-      - stf
     volumes:
       - ./__rethinkdb_data:/data
     command: rethinkdb --bind all --cache-size 1024 --http-port 8090
-
-networks:
-  stf:
