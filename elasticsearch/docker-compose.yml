@@ -1,0 +1,56 @@
+version: '2'
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.2.2
+    environment:
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=changeme
+    volumes:
+      - ./__elasticsearch_data/:/usr/share/elasticsearch/data/
+      - ./__elasticsearch_logs/:/usr/share/elasticsearch/logs/
+      - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    ports:
+      - 9200:9200
+      - 9300:9300
+
+  kibana:
+    depends_on:
+      - elasticsearch
+    image: docker.elastic.co/kibana/kibana:6.2.2
+    ports:
+      - 5601:5601
+    volumes:
+      - ./kibana.yml:/usr/share/kibana/config/kibana.yml
+    command: sh -c "while ! curl -sSL http://elasticsearch:9200 >/dev/null 2>&1; do echo wait for http://elasticsearch:9200; sleep 1; done; kibana"
+
+  filebeat:
+    depends_on:
+      - elasticsearch
+      - kibana
+    image: docker.elastic.co/beats/filebeat:6.2.2
+    volumes:
+      - ./__filebeat_data/:/usr/share/filebeat/data/
+      - ./__filebeat_logs/:/usr/share/filebeat/logs/
+      - ./__osquery_logs/:/var/log/osquery/
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
+    command: sh -c "while ! curl -sSL http://elasticsearch:9200 >/dev/null 2>&1; do echo wait for http://elasticsearch:9200; sleep 1; done; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; filebeat"
+
+  metricbeat:
+    depends_on:
+      - elasticsearch
+      - kibana
+    image: docker.elastic.co/beats/metricbeat:6.2.2
+    volumes:
+      - ./__metricbeat_data/:/usr/share/metricbeat/data/
+      - ./__metricbeat_logs/:/usr/share/metricbeat/logs/
+      - ./metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+    command: sh -c "while ! curl -sSL http://elasticsearch:9200 >/dev/null 2>&1; do echo wait for http://elasticsearch:9200; sleep 1; done; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; metricbeat"
+
+  test_host_of_osquery:
+    build: ./docker-osquery
+    volumes:
+      - ./__osquery_logs/:/var/log/osquery/
+      - ./__osquery_data/:/var/osquery/
+      - ./osqueryd.conf:/etc/osquery/osquery.conf
+
