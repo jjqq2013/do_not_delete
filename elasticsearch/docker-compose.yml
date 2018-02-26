@@ -54,3 +54,16 @@ services:
       - ./__osquery_data/:/var/osquery/
       - ./osqueryd.conf:/etc/osquery/osquery.conf
     command: osqueryd --verbose
+
+  filebeat2:
+    depends_on:
+      - elasticsearch
+      - kibana
+    image: docker.elastic.co/beats/filebeat:6.2.2
+    volumes:
+      - ./__filebeat2_data/:/usr/share/filebeat/data/
+      - ./__filebeat2_logs/:/usr/share/filebeat/logs/
+      - /var/log/:/var/log/
+      - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
+      - ./osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
+    command: sh -c "while ! curl -sSL http://elasticsearch:9200 >/dev/null 2>&1; do echo wait for http://elasticsearch:9200; sleep 1; done; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; filebeat"
