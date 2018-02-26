@@ -53,4 +53,4 @@ services:
       - ./__osquery_logs/:/var/log/osquery/
       - ./__osquery_data/:/var/osquery/
       - ./osqueryd.conf:/etc/osquery/osquery.conf
-
+    command: osqueryd --verbose
