@@ -5,6 +5,7 @@ services:
     environment:
       - discovery.type=single-node
       - ELASTIC_PASSWORD=changeme
+      - TAKE_FILE_OWNERSHIP=1
     volumes:
       - ./__elasticsearch_data/:/usr/share/elasticsearch/data/
       - ./__elasticsearch_logs/:/usr/share/elasticsearch/logs/
