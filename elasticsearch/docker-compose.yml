@@ -8,7 +8,6 @@ services:
       - TAKE_FILE_OWNERSHIP=1
     volumes:
       - ./__elasticsearch_data/:/usr/share/elasticsearch/data/
-      - ./__elasticsearch_logs/:/usr/share/elasticsearch/logs/
       - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
     ports:
       - 9200:9200
@@ -30,12 +29,11 @@ services:
       - kibana
     image: docker.elastic.co/beats/filebeat:6.2.2
     volumes:
-      - ./__osquery_logs/:/var/log/osquery/
-      - ./osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
+      - ./__osquery_results/:/var/log/osquery/
+      - ./filebeat_module_osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
-      - ./filebeat_module_system.yml:/usr/share/filebeat/modules.d/system.yml
     user: root:filebeat
-    command: sh -c "cd /usr/share/filebeat; chown root:filebeat filebeat.yml modules.d/osquery.yml modules.d/system.yml; chmod go-w filebeat.yml modules.d/osquery.yml modules.d/system.yml; while ! curl -sSL http://elasticsearch:9200 >/dev/null 2>&1; do echo wait for http://elasticsearch:9200; sleep 1; done; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; filebeat --setup"
+    command: sh -c "cd /usr/share/filebeat; chown root:filebeat filebeat.yml modules.d/osquery.yml; chmod go-w filebeat.yml modules.d/osquery.yml; while ! curl -sSL http://elasticsearch:9200 >/dev/null 2>&1; do echo wait for http://elasticsearch:9200; sleep 1; done; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; filebeat --setup"
 
   filebeat_watch_host_osquery:
     depends_on:
@@ -43,12 +41,11 @@ services:
       - kibana
     image: docker.elastic.co/beats/filebeat:6.2.2
     volumes:
-      - /var/log/:/var/log/:ro
-      - ./osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
+      - ./__osquery_results/:/var/log/osquery/
+      - ./filebeat_module_osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
-      - ./filebeat_module_system.yml:/usr/share/filebeat/modules.d/system.yml
     user: root:filebeat
-    command: sh -c "cd /usr/share/filebeat; chown root:filebeat filebeat.yml modules.d/osquery.yml modules.d/system.yml; chmod go-w filebeat.yml modules.d/osquery.yml modules.d/system.yml; while ! curl -sSL http://elasticsearch:9200 >/dev/null 2>&1; do echo wait for http://elasticsearch:9200; sleep 1; done; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; filebeat --setup"
+    command: sh -c "cd /usr/share/filebeat; chown root:filebeat filebeat.yml modules.d/osquery.yml; chmod go-w filebeat.yml modules.d/osquery.yml; while ! curl -sSL http://elasticsearch:9200 >/dev/null 2>&1; do echo wait for http://elasticsearch:9200; sleep 1; done; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; filebeat --setup"
 
   metricbeat:
     depends_on:
@@ -57,13 +54,12 @@ services:
     image: docker.elastic.co/beats/metricbeat:6.2.2
     volumes:
       - ./metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
-      - ./metricbeat_module_system.yml:/usr/share/metricbeat/modules.d/system.yml
     user: root:metricbeat
-    command: sh -c "cd /usr/share/metricbeat; chown root:metricbeat metricbeat.yml modules.d/system.yml; chmod go-w metricbeat.yml modules.d/system.yml; while ! curl -sSL http://elasticsearch:9200 >/dev/null 2>&1; do echo wait for http://elasticsearch:9200; sleep 1; done; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; metricbeat --setup"
+    command: sh -c "cd /usr/share/metricbeat; chown root:metricbeat metricbeat.yml; chmod go-w metricbeat.yml; while ! curl -sSL http://elasticsearch:9200 >/dev/null 2>&1; do echo wait for http://elasticsearch:9200; sleep 1; done; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; metricbeat --setup"
 
   test_host_of_osquery:
     build: ./docker-osquery
     volumes:
-      - ./__osquery_logs/:/var/log/osquery/
+      - ./__osquery_results/:/var/log/osquery/
       - ./osqueryd.conf:/etc/osquery/osquery.conf
     command: osqueryd --verbose
