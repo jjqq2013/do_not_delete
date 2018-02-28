@@ -4,8 +4,6 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch:5.4.0
     environment:
       - discovery.type=single-node
-      - ELASTIC_PASSWORD=changeme
-      - TAKE_FILE_OWNERSHIP=1
     volumes:
       - ./__elasticsearch_data/:/usr/share/elasticsearch/data/
       - ./elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
@@ -32,7 +30,7 @@ services:
       - ./filebeat_module_osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
     user: root:filebeat
-    command: sh -c "chown root:filebeat filebeat.yml modules.d/osquery.yml; chmod go-w filebeat.yml modules.d/osquery.yml; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; exec filebeat --setup"
+    command: sh -c "chown root:filebeat filebeat.yml modules.d/osquery.yml; chmod go-w filebeat.yml modules.d/osquery.yml; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; exec filebeat"
 
   filebeat_for_osquery_in_host:
     depends_on:
@@ -44,17 +42,7 @@ services:
       - ./filebeat_module_osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
     user: root:filebeat
-    command: sh -c "chown root:filebeat filebeat.yml modules.d/osquery.yml; chmod go-w filebeat.yml modules.d/osquery.yml; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; exec filebeat --setup"
-
-  metricbeat:
-    depends_on:
-      - elasticsearch
-      - kibana
-    image: docker.elastic.co/beats/metricbeat:6.2.2
-    volumes:
-      - ./metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
-    user: root:metricbeat
-    command: sh -c "chown root:metricbeat metricbeat.yml; chmod go-w metricbeat.yml; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; exec metricbeat --setup"
+    command: sh -c "chown root:filebeat filebeat.yml modules.d/osquery.yml; chmod go-w filebeat.yml modules.d/osquery.yml; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; exec filebeat"
 
   osquery:
     build: ./docker-osquery
