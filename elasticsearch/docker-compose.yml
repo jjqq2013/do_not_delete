@@ -28,7 +28,7 @@ services:
       - kibana
     image: docker.elastic.co/beats/filebeat:6.2.2
     volumes:
-      - ./__osquery_results/:/var/log/osquery/
+      - ./__osquery_results/:/var/log/osquery/:ro
       - ./filebeat_module_osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
     user: root:filebeat
@@ -40,7 +40,7 @@ services:
       - kibana
     image: docker.elastic.co/beats/filebeat:6.2.2
     volumes:
-      - /var/log/:/var/log/ #for /var/log/osquery/osqueryd*.log
+      - /var/log/:/var/log/:ro   #for /var/log/osquery/osqueryd*.log
       - ./filebeat_module_osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
     user: root:filebeat

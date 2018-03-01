@@ -24,25 +24,23 @@ services:
     depends_on:
       - elasticsearch
       - kibana
-    image: docker.elastic.co/beats/filebeat:6.2.2
+    build: ./docker-filebeat5.4-with-osquery-supported
     volumes:
-      - ./__osquery_results/:/var/log/osquery/
-      - ./filebeat_module_osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
+      - ./__osquery_results/:/var/log/osquery/:ro
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
     user: root:filebeat
-    command: sh -c "chown root:filebeat filebeat.yml modules.d/osquery.yml; chmod go-w filebeat.yml modules.d/osquery.yml; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; exec filebeat"
+    command: sh -c "chown root:filebeat filebeat.yml; chmod go-w filebeat.yml; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; exec filebeat"
 
   filebeat_for_osquery_in_host:
     depends_on:
       - elasticsearch
       - kibana
-    image: docker.elastic.co/beats/filebeat:6.2.2
+    build: ./docker-filebeat5.4-with-osquery-supported
     volumes:
-      - /var/log/:/var/log/ #for /var/log/osquery/osqueryd*.log
-      - ./filebeat_module_osquery.yml:/usr/share/filebeat/modules.d/osquery.yml
+      - /var/log/:/var/log/:ro   #for /var/log/osquery/osqueryd*.log but don not want create dir first
       - ./filebeat.yml:/usr/share/filebeat/filebeat.yml
     user: root:filebeat
-    command: sh -c "chown root:filebeat filebeat.yml modules.d/osquery.yml; chmod go-w filebeat.yml modules.d/osquery.yml; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; exec filebeat"
+    command: sh -c "chown root:filebeat filebeat.yml; chmod go-w filebeat.yml; while ! curl -sSL http://kibana:5601 >/dev/null 2>&1; do echo wait for http://kibana:5601; sleep 1; done; 2>/dev/null; exec filebeat"
 
   osquery:
     build: ./docker-osquery
