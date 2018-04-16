@@ -5,7 +5,7 @@ services:
     depends_on:
       - rethinkdb
     image: openstf/stf
-    command: stf local --adb-host=docker.for.mac.localhost --adb-port=15037
+    command: stf local --adb-host=host.docker.internal --allow-remote --adb-port=15037
     ports:
       - 7100:7100
       - 7110:7110
