@@ -55,7 +55,7 @@ EOF
 sysctl --system
 
 # Get the IP address that VirtualBox has given this VM
-IPADDR=$(ip address show enp0s8 | grep -Po '(?<=inet )[^/]+')
+IPADDR=$((ip address show enp0s8 || ip address show eth1 || ip address show eth0) | grep -Po '(?<=inet )[^/]+')
 echo This VM has IP address $IPADDR
 
 # Set up Kubernetes
