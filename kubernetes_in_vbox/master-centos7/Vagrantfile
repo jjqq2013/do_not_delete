@@ -36,10 +36,11 @@ gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cl
 EOF
 setenforce 0
 yum install -y kubelet$KUBE_VER kubeadm$KUBE_VER kubectl$KUBE_VER
-systemctl enable kubelet && systemctl start kubelet
 
 # change default cgroup-driver
 sed -i "s/cgroup-driver=systemd/cgroup-driver=cgroupfs/g" /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
+
+systemctl enable kubelet && systemctl start kubelet
 
 # kubelet requires swap off
 swapoff -a
